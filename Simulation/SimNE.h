@@ -1,9 +1,11 @@
 #pragma once
 #include "ISimulator.h"
 #include "../Multiagent/MultiagentNE.h"
+#include "../Multiagent/IMultiagentSystem.h"
 #include "../Math/easymath.h"
 #include <limits>
 #include <sstream>
+#include <cfloat>
 
 using namespace std;
 using namespace easymath;

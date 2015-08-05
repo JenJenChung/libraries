@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 
 typedef std::vector<double> matrix1d;
 typedef std::vector<std::vector<double> > matrix2d;

@@ -9,7 +9,7 @@
 class MultiagentTypeNE: public MultiagentNE
 {
 public:
-	const enum TypeHandling{BLIND, WEIGHTED, CROSSWEIGHTED, MULTIMIND, NMODES}; // options for handling different types
+	enum TypeHandling{BLIND, WEIGHTED, CROSSWEIGHTED, MULTIMIND, NMODES}; // options for handling different types // original: const enum TypeHandling{BLIND, WEIGHTED, CROSSWEIGHTED, MULTIMIND, NMODES}; // options for handling different types
 	TypeHandling type_mode;
 	int n_types;
 

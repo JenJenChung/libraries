@@ -212,7 +212,8 @@ double NeuralNet::backProp(matrix1d &observations, matrix1d &t){
 	delta.back() = matrixMultiply(D.back(),e); // output layer delta
 
 	for (int connection=connections()-2; connection>=0; connection--){ // back propagation
-		delta[connection]=matrixMultiply(matrixMultiply(D[connection],W[connection+1]),delta[connection+1]);
+		matrix2d temp = matrixMultiply(D[connection],W[connection+1]) ;
+		delta[connection]=matrixMultiply(temp,delta[connection+1]);
 	}
 
 	// Corrections to weights

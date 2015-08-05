@@ -95,7 +95,7 @@ public:
 		/*
 		Output function for 1d vector, list, etc: anything that can be iterated over
 		*/
-		ofstream file;
+		std::ofstream file; // original: ofstream file;
 		file.open(fileName.c_str());
 		if (file.is_open()){
 			fileOut1D(output1d,file,separator);
@@ -114,7 +114,7 @@ public:
 		std::ofstream file;
 		file.open(fileName.c_str());
 		if (file.is_open()){
-			for (M2::iterator outer=output2d.begin(); outer!=output2d.end(); outer++){
+			for (typename M2::iterator outer=output2d.begin(); outer!=output2d.end(); outer++){ // original: for (M2::iterator outer=output2d.begin(); outer!=output2d.end(); outer++){
 				fileOut1D(*outer, file,separator);
 				file << "\n";
 			}
@@ -151,10 +151,10 @@ public:
 		/*
 		Output function for 3d vector, list, etc: anything that can be iterated over
 		*/
-		ofstream file;
+		std::ofstream file; // original: ofstream file;
 		file.open(fileName.c_str());
 		if (file.is_open()){
-			for (M3::iterator outer=output3d.begin(); outer!=output3d.end(); outer++){
+			for (typename M3::iterator outer=output3d.begin(); outer!=output3d.end(); outer++){ // original: for (M3::iterator outer=output3d.begin(); outer!=output3d.end(); outer++){
 				fileOut2D(*outer, file, separator);
 				file << "\n";
 			}
@@ -171,7 +171,7 @@ private:
 		/*
 		Helper function for 1- and 2-d file output
 		*/
-		for (M1::iterator outer=output1d.begin(); outer!=output1d.end(); outer++){
+		for (typename M1::iterator outer=output1d.begin(); outer!=output1d.end(); outer++){ // original: for (M1::iterator outer=output1d.begin(); outer!=output1d.end(); outer++){
 			file << *outer << separator;
 		}
 	}
@@ -180,7 +180,7 @@ private:
 		/*
 		Helper function for 3-d file output
 		*/
-		for (M2::iterator outer=output2d.begin(); outer!=output2d.end(); outer++){
+		for (typename M2::iterator outer=output2d.begin(); outer!=output2d.end(); outer++){ // original: for (M2::iterator outer=output2d.begin(); outer!=output2d.end(); outer++){
 			fileOut1D(*outer, file, separator);
 		}
 	}

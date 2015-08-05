@@ -15,7 +15,7 @@
 #include "../Math/easymath.h"
 #include <sstream>
 #include <fstream>
-#include "../../projects/Sandbox/Sandbox/Matrix.h"
+#include "../Math/Matrix.h"
 
 using namespace easymath;
 using namespace Numeric_lib;
@@ -81,6 +81,12 @@ public:
 // A-star search is used to find a path through the maze. Each edge has a
 // weight of one, so the total path length is equal to the number of edges
 // traversed.
+
+// original: did not include following declarations required to allow static friend function
+class maze ;
+static std::ostream& operator<<(std::ostream&, const maze&) ;
+// end amendments
+
 class maze {
 public:
 

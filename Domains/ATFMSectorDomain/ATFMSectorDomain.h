@@ -31,7 +31,7 @@ class UAV{
 	environment through planning. Planning is done through boost. 
 	*/
 public:
-	const enum UAVType{SLOW, FAST, NTYPES=5};
+	enum UAVType{SLOW, FAST, NTYPES=5}; // original: const enum UAVType{SLOW, FAST, NTYPES=5};
 	//const enum UAVType{SLOW,NTYPES};
 
 	UAV(easymath::XY start_loc, easymath::XY end_loc,

@@ -24,45 +24,6 @@ using namespace easymath;
 
 typedef float cost;
 
-// euclidean distance heuristic
-template <class Graph, class CostType, class LocMap>
-class distance_heuristic : public astar_heuristic<Graph, CostType>
-{
-public:
-	typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
-	distance_heuristic(LocMap l, Vertex goal, int xdim, int ydim): 
-		m_location(l), 
-		m_goal(goal),
-		XDIM(xdim),
-		YDIM(ydim)
-	{};
-	CostType operator()(Vertex u)
-	{
-		//CostType dx = m_location[m_goal].x - m_location[u].x;
-		//CostType dy = m_location[m_goal].y - m_location[u].y;
-
-		int x1, y1, x2, y2;
-		AStar_easy::ind2sub(YDIM, u, x1, y1);
-		AStar_easy::ind2sub(YDIM, m_goal, x2, y2);
-		
-		double dx = x2-x1;
-		double dy = y2-y1;
-
-		return CostType(::sqrt(dx * dx + dy * dy));
-	}
-private:
-	LocMap m_location;
-	Vertex m_goal;
-	int XDIM, YDIM;
-	/*void ind2sub(int cols, int ind, int &r, int &c){
-		//0-indexed: ind-1 always called
-		// NOTE: REPLICA OF THE ONE IN ASTAR
-		r = (ind-1)%cols;
-		c = floor((ind-1)/cols);
-	}*/
-};
-
-
 struct found_goal {}; // exception for termination
 
 // visitor that terminates when we find the goal
@@ -79,7 +40,6 @@ public:
 private:
 	Vertex m_goal;
 };
-
 
 class zero_heuristic {
 public:
@@ -325,5 +285,44 @@ public:
 			locations[count++] = *it;
 		}
 	}
+};
+
+// original: between class astar_goal_visitor and class zero_heuristic, moved due to class AStar_easy definition requirement
+// euclidean distance heuristic
+template <class Graph, class CostType, class LocMap>
+class distance_heuristic : public astar_heuristic<Graph, CostType>
+{
+public:
+	typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
+	distance_heuristic(LocMap l, Vertex goal, int xdim, int ydim): 
+		m_location(l), 
+		m_goal(goal),
+		XDIM(xdim),
+		YDIM(ydim)
+	{};
+	CostType operator()(Vertex u)
+	{
+		//CostType dx = m_location[m_goal].x - m_location[u].x;
+		//CostType dy = m_location[m_goal].y - m_location[u].y;
+
+		int x1, y1, x2, y2;
+		AStar_easy::ind2sub(YDIM, u, x1, y1);
+		AStar_easy::ind2sub(YDIM, m_goal, x2, y2);
+		
+		double dx = x2-x1;
+		double dy = y2-y1;
+
+		return CostType(::sqrt(dx * dx + dy * dy));
+	}
+private:
+	LocMap m_location;
+	Vertex m_goal;
+	int XDIM, YDIM;
+	/*void ind2sub(int cols, int ind, int &r, int &c){
+		//0-indexed: ind-1 always called
+		// NOTE: REPLICA OF THE ONE IN ASTAR
+		r = (ind-1)%cols;
+		c = floor((ind-1)/cols);
+	}*/
 };
 

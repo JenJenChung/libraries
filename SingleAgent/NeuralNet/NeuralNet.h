@@ -46,7 +46,7 @@ private:
 	double backProp(matrix1d &o, matrix1d &t);
 	void feedForward(matrix1d &o, matrix2d &Ohat, matrix3d &D);
 	matrix2d matrixMultiply(matrix2d &A, matrix2d &B);
-	matrix2d matrixMultiply(matrix1d&A, matrix1d &B);
+	matrix2d matrixMultiply(matrix1d &A, matrix1d &B);
 	matrix1d matrixMultiply(matrix2d &A, matrix1d &B);
 	matrix1d matrixMultiply(matrix1d &A, matrix2d &B);
 	void sigmoid(matrix1d &myVector);

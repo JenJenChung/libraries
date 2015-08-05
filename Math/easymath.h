@@ -26,7 +26,7 @@ std::vector<std::vector<T> > vector_init(int XDIM, int YDIM, T INITVAL){
 
 template <class T>
 void clear_all(T &ptrs){
-	while (T.size()){
+	while (ptrs.size()){ // originally: while (T.size()){
 		delete ptrs.back();
 		ptrs.pop_back();
 	}
@@ -67,8 +67,8 @@ namespace easymath{
 		XY(){};
 		~XY(){};
 		double x,y;
-		XY & operator-(const XY &other){
-			return XY(x-other.x, y-other.y);
+		XY operator-(const XY &other){ // original: XY & operator-(const XY &other){
+			return XY(x-other.x, y-other.y) ;
 		}
 		friend bool operator<(const XY &lhs, const XY &rhs){
 			if (lhs.x!=rhs.x) return lhs.x<rhs.x;
