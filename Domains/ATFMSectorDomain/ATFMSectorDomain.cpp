@@ -32,6 +32,7 @@ void UAV::pathPlan(AStar_easy* Astar_highlevel, grid_lookup &m2astar, barrier_gr
 {
 	int memstart = membership_map->at(loc.x,loc.y);
 	int memend = membership_map->at(end_loc.x,end_loc.y);
+	
 	list<AStar_easy::vertex> high_path = Astar_highlevel->search(memstart,memend);
 
 	if (abstraction_mode){
@@ -441,8 +442,19 @@ void ATFMSectorDomain::setCostMaps(vector<vector<double> > agent_actions){
 	for (int i=0; i<weights[0].size(); i++){
 		for (int j=0; j<UAV::NTYPES; j++){
 			int s = sector_dir_map[i].first;
-			int d = j*UAV::NTYPES + sector_dir_map[i].second;
+			int d = j*(UAV::NTYPES-1) + sector_dir_map[i].second;
+			
+			// JEN: check for valid matrix indices
+			if (s < 0 || s >= agent_actions.size())
+				cout << "s: " << s << endl ;
+			if (d < 0 || d >= agent_actions[s].size())
+				cout << "d: " << d << endl ;
 			weights[j][i] = agent_actions[s][d];
+			if (weights[j][i] < 0.0){
+				cout << "Negative weight at (j,i): (" << j << "," << i << ") (s,d): (" << s << "," << d << ")\n" ;
+				cout << "weights[j][i]: " << weights[j][i] << " agent_actions[s][d]: " << agent_actions[s][d] << endl ;
+			}
+			// END
 		}
 		// HACK
 		// weights[i] = agent_actions[sector_dir_map[i].first][sector_dir_map[i].second]; // AGENT SETUP // old
