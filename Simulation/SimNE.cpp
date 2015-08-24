@@ -37,7 +37,7 @@ void SimNE::epoch(int ep){
 
 	do{
 		matrix2d Rtrials; // Trial average reward
-		for (int t=0; t<sim_params->n_trials; t++){
+		for (int tt=0; tt<sim_params->n_trials; tt++){
 			clock_t tref = clock();
 			for (int s=0; s<domain->n_steps; s++){
 				//printf("Step %i\n",s);
@@ -45,7 +45,7 @@ void SimNE::epoch(int ep){
 				domain->simulateStep(A);
 				domain->logStep(s);
 			}
-			t= clock();
+			int t= clock();
 			printf("t=%f\n",float(t-tref)/CLOCKS_PER_SEC);
 			tref=t;
 
