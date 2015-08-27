@@ -11,7 +11,7 @@
 #ifndef MATRIX_LIB
 #define MATRIX_LIB
 
-#include "../Math/easymath.h"
+#include "easymath.h"
 #include<string>
 #include<algorithm>
 //#include<iostream>

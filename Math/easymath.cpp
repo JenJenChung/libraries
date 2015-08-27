@@ -62,6 +62,28 @@ namespace easymath{
 		double dy = p1.y-p2.y;
 		return sqrt(dx*dx+dy*dy);
 	}
+	
+	matrix1d DotMultiply(matrix1d v, double n){
+		for (unsigned i = 0; i < v.size(); i++){
+			v[i] *= n ;
+		}
+		return v ;
+	}
+	
+	matrix1d calc_mean_var(matrix1d points){
+		double sum  = 0, mu = 0, sigma_sq = 0, sdev = 0, dev = 0;
+		sum = accumulate(points.begin(), points.end(), 0.0);
+		mu = sum / points.size();
+		sdev = inner_product(points.begin(), points.end(), points.begin(), 0.0);
+		sigma_sq = sdev/points.size() - mu*mu;
+
+		matrix1d m_and_v;
+		m_and_v.push_back(mu);
+		m_and_v.push_back(sigma_sq);
+
+		return m_and_v;
+	}
+	
 	int getMaxIndex(matrix1d myvector){
 		return distance(myvector.begin(),std::max_element(myvector.begin(),myvector.end()));
 	}

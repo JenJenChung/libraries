@@ -34,19 +34,22 @@ void SimNE::epoch(int ep){
 	double best_run_performance = -DBL_MAX;
 
 	int n=0; // neural net number (for output file name)
+	clock_t tref = clock();
 
 	do{
 		matrix2d Rtrials; // Trial average reward
 		for (int tt=0; tt<sim_params->n_trials; tt++){
-			clock_t tref = clock();
 			for (int s=0; s<domain->n_steps; s++){
-				//printf("Step %i\n",s);
+//				printf("Step %i.0\n",s);
 				matrix2d A = this->getActions(); // must be called by 'this' in order to access potential child class overload
+//				printf("Step %i.1\n",s);
 				domain->simulateStep(A);
+//				printf("Step %i.2\n",s);
 				domain->logStep(s);
+//				printf("Step %i.3\n",s);
 			}
 			int t= clock();
-			printf("t=%f\n",float(t-tref)/CLOCKS_PER_SEC);
+			printf("t_simulate=%f\n",float(t-tref)/CLOCKS_PER_SEC);
 			tref=t;
 
 			matrix1d R = domain->getRewards();
@@ -66,6 +69,7 @@ void SimNE::epoch(int ep){
 					domain->exportLog("stat_results/conflict_map-99-",ep);
 				}
 			}
+			
 			printf("NN#%i, %f\n",n, best_run);
 			//printf(".");
 			ostringstream epi,ni,ti;
@@ -78,10 +82,12 @@ void SimNE::epoch(int ep){
 			domain->reset();
 		}
 		MAS->updatePolicyValues(mean2(Rtrials)); // based on the trials...
-
+		
 		n++;
+		
 	} while (((MultiagentNE*)MAS)->setNextPopMembers()); // this also takes care of reset functions
 	((MultiagentNE*)MAS)->selectSurvivors();
+
 
 	reward_log.push_back(best_run);
 	metric_log.push_back(best_run_performance);

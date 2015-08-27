@@ -7,6 +7,8 @@
 #include <utility>
 #include <set>
 #include <list>
+#include <numeric>
+#include <math.h>
 
 #define COIN (double(rand())/double(RAND_MAX)) // bounded rand between 0 and 1
 #define COIN_FLOOR0 (double(rand())/double(RAND_MAX+1)) // guaranteed floor 0 (for indices)
@@ -93,6 +95,8 @@ namespace easymath{
 	int getMaxIndex(matrix1d myvector);
 	std::set<XY> getNUniquePositions(int N, double xbound, double ybound=-1);
 	double distance(XY p1, XY p2);
+	matrix1d DotMultiply(matrix1d v, double n) ;
+	matrix1d calc_mean_var(matrix1d points) ;
 	void discretizeSegment(std::vector<XY>::iterator iter_begin, std::vector<XY> myvec, int n_even_segments);
 	int cardinalDirection(XY dx_dy);
 }

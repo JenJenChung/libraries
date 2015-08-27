@@ -6,6 +6,7 @@
 #include <limits>
 #include <sstream>
 #include <cfloat>
+#include <chrono>
 
 using namespace std;
 using namespace easymath;
