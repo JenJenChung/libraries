@@ -3,6 +3,8 @@
 // STL includes
 #include <utility>
 #include <cmath>
+#include <fstream>
+#include <sstream>
 
 // Library includes
 #include "../IDomainStateful.h"

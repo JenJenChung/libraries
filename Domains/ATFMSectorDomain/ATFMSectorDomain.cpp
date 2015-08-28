@@ -160,16 +160,16 @@ std::list<UAV> Fix::generateTraffic(vector<Fix>* allFixes, barrier_grid* obstacl
 
 
 
-	/* VARIABLE TRAFFIC METHOD
-	double coin = COIN_FLOOR0;
-	if (coin<p_gen){
-		XY end_loc;
-		do {
-			end_loc = allFixes->at(COIN_FLOOR0*allFixes->size()).loc;
-		} while (end_loc==loc);
-		UAV::UAVType type_id_set = UAV::UAVType(calls%int(UAV::UAVType::NTYPES)); // EVEN TYPE NUMBER
-		newTraffic.push_back(UAV(loc,end_loc,pathTraces,type_id_set));
-	}*/
+	// VARIABLE TRAFFIC METHOD
+//	double coin = COIN_FLOOR0;
+//	if (coin<p_gen){
+//		XY end_loc;
+//		do {
+//			end_loc = allFixes->at(abs(coin)*allFixes->size()).loc;
+//		} while (end_loc==loc);
+//		UAV::UAVType type_id_set = UAV::UAVType(calls%int(UAV::UAVType::NTYPES)); // EVEN TYPE NUMBER
+//		newTraffic.push_back(UAV(loc,end_loc,pathTraces,type_id_set));
+//	}
 
 	calls++;
 	return newTraffic;
@@ -209,7 +209,7 @@ ATFMSectorDomain::ATFMSectorDomain(bool deterministic):
 	//n_control_elements=4; // 4 outputs for sectors (cost in cardinal directions) (no types)
 	n_control_elements=4*UAV::NTYPES;
 	n_state_elements=4; // 4 state elements for sectors ( number of planes traveling in cardinal directions)
-	n_steps=100; // steps of simulation time
+	n_steps=200; // steps of simulation time
 	n_types=UAV::NTYPES;
 
 	// Read in files for sector management

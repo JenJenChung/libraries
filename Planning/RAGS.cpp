@@ -325,7 +325,7 @@ vector<double> linspace(double a, double b, int n)
 }
 
 // Function to compare vertices: returns TRUE if vertex A is better than vertex B
-bool ComputeImprovementProbability(Vertex * A, Vertex * B)
+double ComputeImprovementProbability(Vertex * A, Vertex * B)
 {
   vector<Node *> ANodes = A->GetNodes();
   vector<Node *> BNodes = B->GetNodes();
@@ -352,7 +352,7 @@ bool ComputeImprovementProbability(Vertex * A, Vertex * B)
   // If code is taking too long, change n to a smaller value
   // Note that since this is the numerical integration discretisation
   // smaller n will provide coarser approximation to solution
-  int n = 10000 ;
+  int n = 100 ;
   vector<double> x = linspace(min_3sig,max_3sig,n) ;
   double dx = x[1]-x[0] ;
   double pImprove = 0.0 ;
@@ -383,6 +383,14 @@ bool ComputeImprovementProbability(Vertex * A, Vertex * B)
     }
     pImprove += (p_cAi)*(1-p_cBi)*dx ;
   }
+
+  return pImprove ;
+}
+
+// Function to compare vertices: returns TRUE if vertex A is better than vertex B
+bool IsABetterThanB(Vertex * A, Vertex * B)
+{
+  double pImprove = ComputeImprovementProbability(A,B) ;
 
   return (pImprove<=0.5);
 }
@@ -433,13 +441,11 @@ XY RAGS::SearchGraph(Vertex * start, Vertex * goal, vector<double> &weights)
   AssignCurrentEdgeCosts(weights) ;
   
   // Initialise non-dominated path set
-  if (itsNDSet.empty())
-  {
+  if (itsNDSet.empty()){
     itsSearch = new Search(itsGraph, start, goal) ;
     vector<Node *> GSPaths = itsSearch->PathSearch(PSET) ;
     
-    if (GSPaths.empty())
-    {
+    if (GSPaths.empty()){
       XY s = XY(start->GetX(),start->GetY()) ;
       return s ; // no paths found, stay where you are
     }
@@ -452,28 +458,23 @@ XY RAGS::SearchGraph(Vertex * start, Vertex * goal, vector<double> &weights)
   }
     
   // Flag and return if current vertex does not match start vertex
-  if (!(itsVert == start))
-  {
-    cout << "\nError: input start vertex (" << start->GetX() << "," << start->GetY() <<
-    ") does not match stored vertex (" << itsVert->GetX() << "," << itsVert->GetY() << ")." <<
-    endl ; 
+  if (!(itsVert == start)){
+    printf("\nERROR: input start vertex (%f,%f) does not match stored vertex (%f,%f)", 
+    	start->GetX(), start->GetY(), itsVert->GetX(), itsVert->GetY()) ; 
     XY s = XY(start->GetX(),start->GetY()) ;
     return s ;
   }
-  
+	
   vector<Node *> newNodes = itsNDSet ;
   itsVert->SetNodes(newNodes) ;
   vector<Node *> tmpNodes ;
   vector<Vertex *> nextVerts ;
   
   // Identify next vertices
-  for (unsigned i = 0; i < newNodes.size(); i++)
-  {
+  for (unsigned i = 0; i < newNodes.size(); i++){
 	  bool newVert = true ;
-	  for (unsigned j = 0; j < nextVerts.size(); j++)
-	  {
-		  if (nextVerts[j] == newNodes[i]->GetParent()->GetVertex() || nextVerts[j] == itsVert)
-		  {
+	  for (unsigned j = 0; j < nextVerts.size(); j++){
+		  if (nextVerts[j] == newNodes[i]->GetParent()->GetVertex() || nextVerts[j] == itsVert){
 			  newVert = false ;
 			  break ;
 		  }
@@ -483,23 +484,35 @@ XY RAGS::SearchGraph(Vertex * start, Vertex * goal, vector<double> &weights)
   }
   
   // Identify next vertex path nodes
-  for (unsigned i = 0; i < nextVerts.size(); i++)
-  {
+  for (unsigned i = 0; i < nextVerts.size(); i++){
 	  tmpNodes.clear() ;
 	  for (unsigned j = 0; j < newNodes.size(); j++)
-	  {
 		  if (nextVerts[i] == newNodes[j]->GetParent()->GetVertex())
-		  {
 			  tmpNodes.push_back(newNodes[j]->GetParent()) ;
-		  }
-	  }
 	  nextVerts[i]->SetNodes(tmpNodes) ;
   }
-  
-  // Rank next vertices according to probability of improvement
-	sort(nextVerts.begin(),nextVerts.end(),ComputeImprovementProbability) ;
 	
+	// Rank next vertices according to probability of improvement
+	sort(nextVerts.begin(),nextVerts.end(),IsABetterThanB) ;
 	itsVert = nextVerts[0] ;
+	
+//  // Rank next vertices according to probability of improvement
+//  // don't need sort of only one option
+//	if (nextVerts.size() == 1)
+//		itsVert = nextVerts[0] ;
+//	else{
+//		double pImprove = 0.5 ;
+//		unsigned ii = 0 ;
+//		for (unsigned i = 1; i < nextVerts.size(); i++){
+//			double p = ComputeImprovementProbability(nextVerts[0],nextVerts[1]) ;
+//			if (pImprove < p) {
+//				pImprove = p ;
+//				ii = i ;
+//			}
+//		}
+//		itsVert = nextVerts[ii] ;
+//	}
+	
 	itsNDSet = itsVert->GetNodes() ;
 	XY vertXY = XY(itsVert->GetX(),itsVert->GetY()) ;
 	return vertXY ;

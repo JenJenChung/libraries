@@ -147,7 +147,7 @@ ATFMSectorDomain::ATFMSectorDomain(bool deterministic):
 	}
 
 	n_agents = sectors->size(); // number of agents dictated by read in file
-	connection_capacity = matrix2d(n_agents,matrix1d(UAV::NTYPES,2.0)) ; // flat capacity across all types
+	connection_capacity = matrix2d(n_agents,matrix1d(UAV::NTYPES,5.0)) ; // flat capacity across all types
 
 	// Adjust the connection map to be the edges
 	// preprocess boolean connection map
@@ -304,24 +304,16 @@ void ATFMSectorDomain::getPathPlans(){
 
 void ATFMSectorDomain::simulateStep(matrix2d agent_actions){
 	static int calls=0;
-	printf("H\n");
 	setCostMaps(agent_actions);
-	printf("e\n");
 	absorbUAVTraffic();
-	printf("l\n");
 	if (calls%10==0)
 		getNewUAVTraffic();
-	printf("l\n");
 	calls++;
-	printf("o\n");
 	getPathPlans();
-	printf("World\n");
 	detectConflicts();
-	printf("!\n");
 }
 
 void ATFMSectorDomain::setCostMaps(vector<vector<double> > agent_actions){
-	// JEN: log agent actions into edge weight history
 	matrix2d w_val = weights_history.back() ;
 
 	for (unsigned i=0; i<w_val[0].size(); i++){
@@ -365,7 +357,6 @@ void ATFMSectorDomain::setCostMaps(vector<vector<double> > agent_actions){
 			weights[1][i][j] = w_mv[1] ;
 		}
 	}
-	// END
 }
 
 void ATFMSectorDomain::absorbUAVTraffic(){

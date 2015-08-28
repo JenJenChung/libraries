@@ -34,23 +34,20 @@ void SimNE::epoch(int ep){
 	double best_run_performance = -DBL_MAX;
 
 	int n=0; // neural net number (for output file name)
-	clock_t tref = clock();
+//	clock_t tref = clock();
 
 	do{
 		matrix2d Rtrials; // Trial average reward
 		for (int tt=0; tt<sim_params->n_trials; tt++){
 			for (int s=0; s<domain->n_steps; s++){
-//				printf("Step %i.0\n",s);
+//				printf("Step %i\n",s);
 				matrix2d A = this->getActions(); // must be called by 'this' in order to access potential child class overload
-//				printf("Step %i.1\n",s);
 				domain->simulateStep(A);
-//				printf("Step %i.2\n",s);
 				domain->logStep(s);
-//				printf("Step %i.3\n",s);
 			}
-			int t= clock();
-			printf("t_simulate=%f\n",float(t-tref)/CLOCKS_PER_SEC);
-			tref=t;
+//			int t= clock();
+//			printf("t_simulate=%f\n",float(t-tref)/CLOCKS_PER_SEC);
+//			tref=t;
 
 			matrix1d R = domain->getRewards();
 			matrix1d perf = domain->getPerformance();
@@ -62,20 +59,21 @@ void SimNE::epoch(int ep){
 			if (avg_G>best_run) {
 				best_run = avg_G;
 				best_run_performance = avg_perf; // average of the performance metrics
-				if (ep==0){
-					domain->exportLog("stat_results/conflict_map-0-", ep); // blatant abuse of exportlog
-				}
-				if (ep==99){
-					domain->exportLog("stat_results/conflict_map-99-",ep);
-				}
+// SUPPRESSING FOR DEBUGGING************************************************************************
+//				if (ep==0){
+//					domain->exportLog("stat_results/conflict_map-0-", ep); // blatant abuse of exportlog
+//				}
+//				if (ep==99){
+//					domain->exportLog("stat_results/conflict_map-99-",ep);
+//				}
 			}
 			
 			printf("NN#%i, %f\n",n, best_run);
 			//printf(".");
-			ostringstream epi,ni,ti;
-			epi << ep;
-			ni << n;
-			ti << t;
+//			ostringstream epi,ni,ti;
+//			epi << ep;
+//			ni << n;
+//			ti << t;
 			
 			Rtrials.push_back(R);
 
