@@ -34,7 +34,7 @@ void SimNE::epoch(int ep){
 	double best_run_performance = -DBL_MAX;
 
 	int n=0; // neural net number (for output file name)
-//	clock_t tref = clock();
+	clock_t tref = clock();
 
 	do{
 		matrix2d Rtrials; // Trial average reward
@@ -45,9 +45,9 @@ void SimNE::epoch(int ep){
 				domain->simulateStep(A);
 				domain->logStep(s);
 			}
-//			int t= clock();
-//			printf("t_simulate=%f\n",float(t-tref)/CLOCKS_PER_SEC);
-//			tref=t;
+			int t= clock();
+			printf("t=%f\n",float(t-tref)/CLOCKS_PER_SEC);
+			tref=t;
 
 			matrix1d R = domain->getRewards();
 			matrix1d perf = domain->getPerformance();
@@ -70,10 +70,10 @@ void SimNE::epoch(int ep){
 			
 			printf("NN#%i, %f\n",n, best_run);
 			//printf(".");
-//			ostringstream epi,ni,ti;
-//			epi << ep;
-//			ni << n;
-//			ti << t;
+			ostringstream epi,ni,ti;
+			epi << ep;
+			ni << n;
+			ti << t;
 			
 			Rtrials.push_back(R);
 
