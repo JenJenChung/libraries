@@ -242,13 +242,8 @@ vector<Node *> Search::PathSearch(pathOut pType)
 
     Node * currentNeighbour ;
 
-    // Find all neighbours excluding parent vertex if any*******************************************
+    // Find all neighbours excluding ancestor vertices if any
     vector<Edge *> neighbours = itsGraph->GetNeighbours(currentNode) ;
-//    vector<Edge *> neighbours ;    
-//    if (currentNode->GetParent())
-//			neighbours = itsGraph->GetNeighbours(currentNode->GetVertex(),currentNode->GetParent()->GetVertex()) ;
-//    else
-//    	neighbours = itsGraph->GetNeighbours(currentNode->GetVertex()) ;
 
     // Update neighbours
     for (ULONG i = 0; i < (ULONG)neighbours.size(); i++){
