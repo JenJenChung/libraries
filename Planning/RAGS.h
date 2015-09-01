@@ -123,7 +123,9 @@ class Graph
 		
 		vector<Edge *> GetNeighbours(XY v) ;
 		vector<Edge *> GetNeighbours(Vertex * v) ;
-    
+		vector<Edge *> GetNeighbours(XY v, XY v0) ;
+		vector<Edge *> GetNeighbours(Vertex * v, Vertex * v0) ;
+		
 	private:
 		Vertex ** itsVertices ;
 		Edge ** itsEdges ;
@@ -233,18 +235,15 @@ class Queue
 {
 	public:
   	typedef priority_queue<Node *, vector<Node *>, CompareNode> QUEUE ;
-		Queue(Node * source)
-		{
+		Queue(Node * source){
 	    itsPQ = new QUEUE ;
 	    itsPQ->push(source) ;
     }
     
-		~Queue()
-		{
+		~Queue(){
 	    delete itsPQ ;
 	    itsPQ = 0 ;
-	    for (ULONG i = 0; i < closed.size(); i ++)
-	    {
+	    for (ULONG i = 0; i < closed.size(); i ++){
 		    delete closed[i] ;
 		    closed[i] = 0 ;
 	    }
@@ -273,8 +272,7 @@ class Search
 	  	HEURISTIC = ZERO ;
   	}
 
-		~Search()
-		{
+		~Search(){
 	    delete itsQueue ;
 	    itsQueue = 0 ;
     }

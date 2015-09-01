@@ -15,10 +15,9 @@ vector<Edge *> Graph::GetNeighbours(XY v)
 {
   Vertex * pV ;
   for (ULONG i = 0; i < numVertices; i++)
-  {
     if ( v.x == itsVertices[i]->GetX() && v.y == itsVertices[i]->GetY() )
       pV = itsVertices[i] ;
-  }
+
   return GetNeighbours(pV) ;
 }
 
@@ -27,18 +26,47 @@ vector<Edge *> Graph::GetNeighbours(Vertex * v)
   vector<Edge *> neighbours(numEdges) ;
   ULONG k = 0 ;
 
-  for (ULONG i = 0; i < numEdges; i++)
-  {
+  for (ULONG i = 0; i < numEdges; i++){
 	  double x1 = itsEdges[i]->GetVertex1()->GetX() ;
 	  double y1 = itsEdges[i]->GetVertex1()->GetY() ;
-	  if (x1 == v->GetX() && y1 == v->GetY())
-	  {
+	  if (x1 == v->GetX() && y1 == v->GetY()){
 		  neighbours[k] = itsEdges[i] ;
 		  k++ ;
 	  }
   }
 
   neighbours.resize(k) ;
+  return neighbours ;
+}
+
+vector<Edge *> Graph::GetNeighbours(XY v, XY v0) // Do not include parent vertex in list of neighbours
+{
+  Vertex * pV ;
+  Vertex * pV0 ;
+  for (ULONG i = 0; i < numVertices; i++){
+    if ( v.x == itsVertices[i]->GetX() && v.y == itsVertices[i]->GetY() )
+      pV = itsVertices[i] ;
+    if ( v0.x == itsVertices[i]->GetX() && v0.y == itsVertices[i]->GetY() )
+      pV0 = itsVertices[i] ;
+  }
+
+  return GetNeighbours(pV, pV0) ;
+}
+
+vector<Edge *> Graph::GetNeighbours(Vertex * v, Vertex * v0) // Do not include parent vertex in list of neighbours
+{
+  vector<Edge *> neighbours ;
+
+  for (ULONG i = 0; i < numEdges; i++){
+	  double x1 = itsEdges[i]->GetVertex1()->GetX() ;
+	  double y1 = itsEdges[i]->GetVertex1()->GetY() ;
+	  double x2 = itsEdges[i]->GetVertex2()->GetX() ;
+	  double y2 = itsEdges[i]->GetVertex2()->GetY() ;
+	  if (x1 == v->GetX() && y1 == v->GetY() && x2 != v0->GetX() && y2 != v0->GetY()){
+		  neighbours.push_back(itsEdges[i]) ;
+	  }
+  }
+
   return neighbours ;
 }
 
@@ -119,10 +147,8 @@ void Queue::UpdateQueue(Node * newNode)
   // if closed contains node with same vertex, compare their costs
   // choose whether or not to create a new node
   bool dom = false ;
-  for (ULONG i = 0; i < closed.size(); i++)
-  {
-    if (closed[i]->GetVertex() == newNode->GetVertex())
-    {
+  for (ULONG i = 0; i < closed.size(); i++){
+    if (closed[i]->GetVertex() == newNode->GetVertex()){
 	    dom = CompareNodes(newNode, closed[i]) ;
 	    if (dom)
 		    return ;
@@ -136,13 +162,10 @@ Node * Queue::PopQueue()
   // Check if next node is already dominated by existing node in closed set
   Node * newNode = itsPQ->top() ;
   bool dom = false ;
-  for (ULONG i = 0; i < closed.size(); i++)
-  {
-    if (closed[i]->GetVertex() == newNode->GetVertex())
-    {
+  for (ULONG i = 0; i < closed.size(); i++){
+    if (closed[i]->GetVertex() == newNode->GetVertex()){
       dom = CompareNodes(newNode, closed[i]) ;
-      if (dom)
-      {
+      if (dom){
 	      itsPQ->pop() ;
 	      return 0 ;
       }
@@ -155,6 +178,7 @@ Node * Queue::PopQueue()
 
 bool Queue::CompareNodes(const Node * n1, const Node * n2) const
 {
+	// out: Is n1 worse than or equal to n2?
   double n1Cost = n1->GetMeanCost() ;
   double n2Cost = n2->GetMeanCost() ;
   return (n1Cost >= n2Cost && n1->GetVarCost() >= n2->GetVarCost()) ;
@@ -174,44 +198,43 @@ vector<Node *> Search::PathSearch(pathOut pType)
   clock_t t_start = clock() ;
   double t_elapse = 0.0 ;
 
-  while (!itsQueue->EmptyQueue() && t_elapse < 5)
-  {
+  while (!itsQueue->EmptyQueue() && t_elapse < 5.0){
     // Pop cheapest node from queue
     Node * currentNode = itsQueue->PopQueue() ;
-    if (!currentNode) { continue ; }
+    if (!currentNode){
+    	// Dominated node was popped off queue
+    	continue ;
+  	}
 
+    // Terminate search once one path is found
     if (pType == BEST)
-    {
-	    // Terminate search once one path is found
 	    if (currentNode->GetVertex() == itsGoal)
 		    break ;
-    }
 
     Node * currentNeighbour ;
 
-    // Find all neighbours
-    vector<Edge *> neighbours = itsGraph->GetNeighbours(currentNode->GetVertex()) ;
+    // Find all neighbours excluding parent vertex if any
+    vector<Edge *> neighbours ;
+    if (currentNode->GetParent())
+			neighbours = itsGraph->GetNeighbours(currentNode->GetVertex(),currentNode->GetParent()->GetVertex()) ;
+    else
+    	neighbours = itsGraph->GetNeighbours(currentNode->GetVertex()) ;
 
     // Update neighbours
-    for (ULONG i = 0; i < (ULONG)neighbours.size(); i++)
-    {
+    for (ULONG i = 0; i < (ULONG)neighbours.size(); i++){
 	    // Check if neighbour vertex is already in closed set
 	    bool newNeighbour = true ;
-	    if (pType == BEST)
-	    {
+	    if (pType == BEST){
 		    Vertex * vcheck = neighbours[i]->GetVertex2() ;
-		    for (ULONG j = 0; j < itsQueue->GetClosed().size(); j++)
-		    {
-			    if (itsQueue->GetClosed()[j]->GetVertex() == vcheck)
-			    {
+		    for (ULONG j = 0; j < itsQueue->GetClosed().size(); j++){
+			    if (itsQueue->GetClosed()[j]->GetVertex() == vcheck){
 				    newNeighbour = false ;
 				    break ;
 			    }
 		    }
 	    }
 	
-	    if (newNeighbour)
-	    {
+	    if (newNeighbour){
 		    // Create neighbour node
 		    currentNeighbour = new Node(currentNode, neighbours[i]) ;
 		    UpdateNode(currentNeighbour) ;
@@ -222,32 +245,29 @@ vector<Node *> Search::PathSearch(pathOut pType)
     t_elapse = (float)(clock() - t_start)/CLOCKS_PER_SEC ;
   }
 
+	if (t_elapse >= 5.0)
+		printf("Search timed out!\n") ;
+	
   // Check if a path is found
   bool ClosedAll = false ;
-  for (ULONG i = 0; i < itsQueue->GetClosed().size(); i++)
-  {
-    if (itsQueue->GetClosed()[i]->GetVertex() == itsGoal)
-    {
+  for (ULONG i = 0; i < itsQueue->GetClosed().size(); i++){
+    if (itsQueue->GetClosed()[i]->GetVertex() == itsGoal){
 	    ClosedAll = true ;
 	    break ;
     }
   }
 
-  if (!ClosedAll)
-  {
+  if (!ClosedAll){
     cout << "No path found from source to goal.\n" ;
     vector<Node *> bestPath ;
     return bestPath ;
   }
-  else
-  {
+  else{
     ULONG k = 0 ;
     vector<Node *> bestPath((ULONG)itsQueue->GetClosed().size()) ;
 
-    for (ULONG i = 0; i < (ULONG)itsQueue->GetClosed().size(); i++)
-    {
-	    if (itsGoal == itsQueue->GetClosed()[i]->GetVertex())
-	    {
+    for (ULONG i = 0; i < (ULONG)itsQueue->GetClosed().size(); i++){
+	    if (itsGoal == itsQueue->GetClosed()[i]->GetVertex()){
 		    bestPath[k] = itsQueue->GetClosed()[i] ;
 		    k++ ;
 	    }
