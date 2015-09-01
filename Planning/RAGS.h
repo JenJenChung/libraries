@@ -125,6 +125,7 @@ class Graph
 		vector<Edge *> GetNeighbours(Vertex * v) ;
 		vector<Edge *> GetNeighbours(XY v, XY v0) ;
 		vector<Edge *> GetNeighbours(Vertex * v, Vertex * v0) ;
+		vector<Edge *> GetNeighbours(Node * n) ;
 		
 	private:
 		Vertex ** itsVertices ;

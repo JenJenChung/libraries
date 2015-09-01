@@ -70,6 +70,35 @@ vector<Edge *> Graph::GetNeighbours(Vertex * v, Vertex * v0) // Do not include p
   return neighbours ;
 }
 
+vector<Edge *> Graph::GetNeighbours(Node * n) // Do not include parent vertex in list of neighbours
+{
+  vector<Edge *> neighbours ;
+  Vertex * v = n->GetVertex() ;
+
+  for (ULONG i = 0; i < numEdges; i++){
+	  double x1 = itsEdges[i]->GetVertex1()->GetX() ;
+	  double y1 = itsEdges[i]->GetVertex1()->GetY() ;
+	  double x2 = itsEdges[i]->GetVertex2()->GetX() ;
+	  double y2 = itsEdges[i]->GetVertex2()->GetY() ;
+  	if (x1 == v->GetX() && y1 == v->GetY()){
+		  bool isNeighbour = true ;
+		  Node * n0 = n ;
+		  while (n0->GetParent()){
+				n0 = n0->GetParent() ;
+		  	Vertex * v0 = n0->GetVertex() ;
+				if (x2 == v0->GetX() && y2 == v0->GetY()){
+					isNeighbour = false ;
+					break ;
+				}
+			}
+			if (isNeighbour)
+				neighbours.push_back(itsEdges[i]) ;
+	  }
+  }
+
+  return neighbours ;
+}
+
 Vertex ** Graph::GenerateVertices(vector<XY> &vertices)
 {
   numVertices = (ULONG)vertices.size() ;
@@ -213,12 +242,13 @@ vector<Node *> Search::PathSearch(pathOut pType)
 
     Node * currentNeighbour ;
 
-    // Find all neighbours excluding parent vertex if any
-    vector<Edge *> neighbours ;
-    if (currentNode->GetParent())
-			neighbours = itsGraph->GetNeighbours(currentNode->GetVertex(),currentNode->GetParent()->GetVertex()) ;
-    else
-    	neighbours = itsGraph->GetNeighbours(currentNode->GetVertex()) ;
+    // Find all neighbours excluding parent vertex if any*******************************************
+    vector<Edge *> neighbours = itsGraph->GetNeighbours(currentNode) ;
+//    vector<Edge *> neighbours ;    
+//    if (currentNode->GetParent())
+//			neighbours = itsGraph->GetNeighbours(currentNode->GetVertex(),currentNode->GetParent()->GetVertex()) ;
+//    else
+//    	neighbours = itsGraph->GetNeighbours(currentNode->GetVertex()) ;
 
     // Update neighbours
     for (ULONG i = 0; i < (ULONG)neighbours.size(); i++){
