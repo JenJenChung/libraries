@@ -64,7 +64,7 @@ public:
 	Fix(XY loc, int ID, bool deterministic);
 	~Fix(){};
 
-	std::list<UAV> generateTraffic(vector<Fix>* fixes, barrier_grid* obstacle_map, vector<XY> &locations, vector<RAGS::edge> &edge_array, matrix3d &weights);
+	std::list<UAV*> generateTraffic(vector<Fix>* fixes, barrier_grid* obstacle_map, vector<XY> &locations, vector<RAGS::edge> &edge_array, matrix3d &weights);
 	bool atDestinationFix(const UAV &u);
 	int ID;
 	
@@ -102,7 +102,7 @@ public:
 	unsigned int getSector(XY p);
 
 	vector<Sector>* sectors;
-	list<UAV>* UAVs; // this is in a list because it has to be modified often. Never tie an ID/index to a UAV
+	list<UAV*>* UAVs; // this is in a list because it has to be modified often. Never tie an ID/index to a UAV
 	vector<Fix>* fixes;
 
 	vector< vector<int> > direction_map; // direction (cardinal) needed to travel to go from [node1][node2]
@@ -195,10 +195,10 @@ public:
 		}
 		// Count total UAVs on each connection
 		matrix2d current_cap = connection_capacity ;
-		for (list<UAV>::iterator u=UAVs->begin(); u!=UAVs->end(); u++){
-			current_cap[getSector(u->loc)][u->type_ID]-=1.0;
-			if (current_cap[getSector(u->loc)][u->type_ID] < 0.0)
-				overcap[getSector(u->loc)][u->type_ID]-=1.0 ;
+		for (list<UAV*>::iterator u=UAVs->begin(); u!=UAVs->end(); u++){
+			current_cap[getSector((*u)->loc)][(*u)->type_ID]-=1.0;
+			if (current_cap[getSector((*u)->loc)][(*u)->type_ID] < 0.0)
+				overcap[getSector((*u)->loc)][(*u)->type_ID]-=1.0 ;
 		}
 	}
 };

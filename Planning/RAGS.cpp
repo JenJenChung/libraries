@@ -179,8 +179,11 @@ void Queue::UpdateQueue(Node * newNode)
   for (ULONG i = 0; i < closed.size(); i++){
     if (closed[i]->GetVertex() == newNode->GetVertex()){
 	    dom = CompareNodes(newNode, closed[i]) ;
-	    if (dom)
+	    if (dom){
+	    	delete newNode ;
+	    	newNode = 0 ;
 		    return ;
+	    }
     }
   }
   itsPQ->push(newNode) ;
@@ -240,8 +243,6 @@ vector<Node *> Search::PathSearch(pathOut pType)
 	    if (currentNode->GetVertex() == itsGoal)
 		    break ;
 
-    Node * currentNeighbour ;
-
     // Find all neighbours excluding ancestor vertices if any
     vector<Edge *> neighbours = itsGraph->GetNeighbours(currentNode) ;
 
@@ -261,7 +262,7 @@ vector<Node *> Search::PathSearch(pathOut pType)
 	
 	    if (newNeighbour){
 		    // Create neighbour node
-		    currentNeighbour = new Node(currentNode, neighbours[i]) ;
+		    Node * currentNeighbour = new Node(currentNode, neighbours[i]) ;
 		    UpdateNode(currentNeighbour) ;
 		    itsQueue->UpdateQueue(currentNeighbour) ;
 	    }

@@ -68,10 +68,11 @@ bool Fix::atDestinationFix(const UAV &u){
 	return u.end_loc == loc;
 }
 
-list<UAV> Fix::generateTraffic(vector<Fix>* allFixes, barrier_grid* obstacle_map, vector<XY> &locations, vector<RAGS::edge> &edge_array, matrix3d &weights){
+list<UAV*> Fix::generateTraffic(vector<Fix>* allFixes, barrier_grid* obstacle_map, vector<XY> &locations, vector<RAGS::edge> &edge_array, matrix3d &weights){
+//list<UAV> Fix::generateTraffic(vector<Fix>* allFixes, barrier_grid* obstacle_map, vector<XY> &locations, vector<RAGS::edge> &edge_array, matrix3d &weights){
 	static int calls = 0;
 	// Creates a new UAV in the world
-	std::list<UAV> newTraffic;
+	std::list<UAV*> newTraffic;
 	
 	// CONSTANT TRAFFIC FLOW METHOD
 	double coin = COIN_FLOOR0;
@@ -84,7 +85,8 @@ list<UAV> Fix::generateTraffic(vector<Fix>* allFixes, barrier_grid* obstacle_map
 		}
 		UAV::UAVType type_id_set = UAV::UAVType(calls%int(UAV::UAVType::NTYPES)); // EVEN TYPE NUMBER
 		UAV * newUAV = new UAV(loc,end_loc,type_id_set,locations,edge_array,weights[type_id_set]) ;
-		newTraffic.push_back(*newUAV);
+		newTraffic.push_back(newUAV);
+//		newTraffic.push_back(*newUAV);
 	}
 	
 	/* VARIABLE TRAFFIC METHOD
@@ -108,7 +110,7 @@ ATFMSectorDomain::ATFMSectorDomain(bool deterministic):
 	// Object creation
 	sectors = new vector<Sector>();
 	fixes = new vector<Fix>();
-	UAVs = new list<UAV>();
+	UAVs = new list<UAV*>();
 
 	// inherritance elements: constant
 	//n_control_elements=4; // 4 outputs for sectors (cost in cardinal directions) (no types)
@@ -157,9 +159,9 @@ ATFMSectorDomain::ATFMSectorDomain(bool deterministic):
 			if (connection_map[i][j] && i!=j){
 				XY xyi = agent_locs[i];
 				XY xyj = agent_locs[j];
-				XY dx_dy = xyj-xyi;
+				XY dx_dy = xyi-xyj;
 				int xydir = cardinalDirection(dx_dy);
-				int memj = membership_map->at(xyj); // only care about cost INTO sector
+				int memj = membership_map->at(xyi); // costs applied to outgoing edges
 				sector_dir_map[edges.size()] = make_pair(memj,xydir); // add at new index
 				edges.push_back(RAGS::edge(i,j));
 				
@@ -259,8 +261,8 @@ matrix2d ATFMSectorDomain::getStates(){
 		allStates[i] = matrix1d(n_state_elements,0.0); // reserves space
 	}
 
-	for (list<UAV>::iterator u=UAVs->begin(); u!=UAVs->end(); u++){
-		allStates[getSector(u->loc)][u->getDirection()]+=1.0; // Adds the UAV impact on the state
+	for (list<UAV*>::iterator u=UAVs->begin(); u!=UAVs->end(); u++){
+		allStates[getSector((*u)->loc)][(*u)->getDirection()]+=1.0; // Adds the UAV impact on the state
 	}
 
 	return allStates;
@@ -275,12 +277,12 @@ matrix3d ATFMSectorDomain::getTypeStates(){
 		}
 	}
 
-	for (list<UAV>::iterator u=UAVs->begin(); u!=UAVs->end(); u++){
-		int a = getSector(u->loc);
-		int id = u->type_ID;
-		int dir = u->getDirection();
+	for (list<UAV*>::iterator u=UAVs->begin(); u!=UAVs->end(); u++){
+		int a = getSector((*u)->loc);
+		int id = (*u)->type_ID;
+		int dir = (*u)->getDirection();
 		if (a<0){
-			printf("UAV %i at location %f,%f is in an obstacle.!", u->ID,u->loc.x,u->loc.y);
+			printf("UAV %i at location %f,%f is in an obstacle.!", (*u)->ID,(*u)->loc.x,(*u)->loc.y);
 			system("pause");
 		}
 		allStates[a][id][dir]+=1.0;
@@ -296,9 +298,9 @@ unsigned int ATFMSectorDomain::getSector(easymath::XY p){
 
 void ATFMSectorDomain::getPathPlans(){
 	// sets own next waypoint
-	for (list<UAV>::iterator u=UAVs->begin(); u!=UAVs->end(); u++){
+	for (list<UAV*>::iterator u=UAVs->begin(); u!=UAVs->end(); u++){
 		matrix2d w = weights_history.back() ;
-		u->pathPlan(abstraction_mode, connection_time, w[u->type_ID]);
+		(*u)->pathPlan(abstraction_mode, connection_time, w[(*u)->type_ID]);
 	}
 }
 
@@ -360,8 +362,8 @@ void ATFMSectorDomain::setCostMaps(vector<vector<double> > agent_actions){
 }
 
 void ATFMSectorDomain::absorbUAVTraffic(){
-	for (list<UAV>::iterator u=UAVs->begin(); u!=UAVs->end(); u++){
-		if (u->loc==u->end_loc){
+	for (list<UAV*>::iterator u=UAVs->begin(); u!=UAVs->end(); u++){
+		if ((*u)->loc==(*u)->end_loc){
 			u = UAVs->erase(u) ;
 		}
 	}
@@ -372,7 +374,8 @@ void ATFMSectorDomain::getNewUAVTraffic(){
 	// Create RAGS object with current weights history
 	
 	// Generates (with some probability) plane traffic for each sector
-	list<UAV> all_new_UAVs;
+//	list<UAV> all_new_UAVs;
+	list<UAV*> all_new_UAVs;
 	
 	// Collate weights for each type of UAV
 	matrix3d w ;
@@ -390,11 +393,11 @@ void ATFMSectorDomain::getNewUAVTraffic(){
 	
 	// Call Fixes to generate traffic
 	for (unsigned i=0; i<fixes->size(); i++){
-		list<UAV> new_UAVs = fixes->at(i).generateTraffic(fixes, obstacle_map, agent_locs, edges, w);
+		list<UAV*> new_UAVs = fixes->at(i).generateTraffic(fixes, obstacle_map, agent_locs, edges, w);
 		all_new_UAVs.splice(all_new_UAVs.end(),new_UAVs);
 
 		// obstacle check
-		if (new_UAVs.size() && membership_map->at(new_UAVs.front().loc)<0){
+		if (new_UAVs.size() && membership_map->at(new_UAVs.front()->loc)<0){
 			printf("issue!");
 			exit(1);
 		}
@@ -447,18 +450,18 @@ void ATFMSectorDomain::detectConflicts(){
 		count_overcap();
 	} else {
 		double conflict_thresh = 1.0;
-		for (list<UAV>::iterator u1=UAVs->begin(); u1!=UAVs->end(); u1++){
-			for (list<UAV>::iterator u2=std::next(u1); u2!=UAVs->end(); u2++){
-				double d = easymath::distance(u1->loc,u2->loc);
+		for (list<UAV*>::iterator u1=UAVs->begin(); u1!=UAVs->end(); u1++){
+			for (list<UAV*>::iterator u2=std::next(u1); u2!=UAVs->end(); u2++){
+				double d = easymath::distance((*u1)->loc,(*u2)->loc);
 
 				if (u1!=u2){
 					if (d<conflict_thresh){
 						conflict_count++;
 
-						int avgx = (u1->loc.x+u2->loc.x)/2;
-						int avgy = (u1->loc.y+u2->loc.y)/2;
+						int avgx = ((*u1)->loc.x+(*u2)->loc.x)/2;
+						int avgy = ((*u1)->loc.y+(*u2)->loc.y)/2;
 						conflict_count_map->at(avgx,avgy)++;
-						if (u1->type_ID==UAV::FAST || u2->type_ID==UAV::FAST){
+						if ((*u1)->type_ID==UAV::FAST || (*u2)->type_ID==UAV::FAST){
 							conflict_count+=10; // big penalty for high priority ('fast' here)
 						}
 					}
