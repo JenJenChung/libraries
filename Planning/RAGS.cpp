@@ -198,6 +198,8 @@ Node * Queue::PopQueue()
     if (closed[i]->GetVertex() == newNode->GetVertex()){
       dom = CompareNodes(newNode, closed[i]) ;
       if (dom){
+      	delete newNode ;
+      	newNode = 0 ;
 	      itsPQ->pop() ;
 	      return 0 ;
       }

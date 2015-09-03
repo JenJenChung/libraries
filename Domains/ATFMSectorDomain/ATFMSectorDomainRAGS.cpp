@@ -204,6 +204,9 @@ ATFMSectorDomain::ATFMSectorDomain(bool deterministic):
 
 ATFMSectorDomain::~ATFMSectorDomain(void)
 {
+	for (list<UAV*>::iterator u=UAVs->begin(); u!=UAVs->end(); u++){
+		delete (*u) ;
+	}
 	delete UAVs;
 	delete fixes;
 	delete sectors;
@@ -364,6 +367,7 @@ void ATFMSectorDomain::setCostMaps(vector<vector<double> > agent_actions){
 void ATFMSectorDomain::absorbUAVTraffic(){
 	for (list<UAV*>::iterator u=UAVs->begin(); u!=UAVs->end(); u++){
 		if ((*u)->loc==(*u)->end_loc){
+			delete (*u) ;
 			u = UAVs->erase(u) ;
 		}
 	}
@@ -409,6 +413,8 @@ void ATFMSectorDomain::reset(){
 //	static int calls=0;
 
 	// Drop all UAVs
+	for (list<UAV*>::iterator u=UAVs->begin(); u!=UAVs->end(); u++)
+		delete (*u) ;
 	UAVs->clear();
 	
 	// Reset conflict counts
