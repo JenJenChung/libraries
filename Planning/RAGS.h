@@ -242,8 +242,12 @@ class Queue
     }
     
 		~Queue(){
-			while (!itsPQ->empty())
+			while (!itsPQ->empty()){
+				Node * temp = itsPQ->top() ;
+				delete temp ;
+				temp = 0 ;
 				itsPQ->pop() ;
+			}
 	    delete itsPQ ;
 	    itsPQ = 0 ;
 	    for (ULONG i = 0; i < closed.size(); i ++){
@@ -276,15 +280,6 @@ class Search
   	}
 
 		~Search(){
-			printf("Called Search destructor\n") ;
-			// These may cause segfault later on, need to run for longer
-			delete itsGraph ;
-			itsGraph = 0 ;
-			delete itsSource ;
-			itsSource = 0 ;
-			delete itsGoal ;
-			itsGoal = 0 ;
-			// END
 	    delete itsQueue ;
 	    itsQueue = 0 ;
     }

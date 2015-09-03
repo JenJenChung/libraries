@@ -262,6 +262,7 @@ vector<Node *> Search::PathSearch(pathOut pType)
 	
 	    if (newNeighbour){
 		    // Create neighbour node
+		    // Memory leak here ************************************************************************
 		    Node * currentNeighbour = new Node(currentNode, neighbours[i]) ;
 		    UpdateNode(currentNeighbour) ;
 		    itsQueue->UpdateQueue(currentNeighbour) ;
