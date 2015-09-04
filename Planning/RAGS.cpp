@@ -486,6 +486,26 @@ XY RAGS::SearchGraph(Vertex * start, Vertex * goal, vector<double> &weights)
 {
   AssignCurrentEdgeCosts(weights) ;
   
+//  if (!itsNDSet.empty()){
+//		// DEBUGGING: shows that itsNDSet still has access to all Node pointers along paths
+////		for (unsigned j = 0; j < itsNDSet.size(); j++){
+////			Node * hN ;
+////			Node * pN = itsNDSet[j]->GetParent() ;
+////			printf("itsNDSet%d parent: %p\n",j,(void *)pN) ;
+////			while (pN){
+////				hN = pN->GetParent() ;
+////				printf("itsNDSet%d grandparent: %p\n",j,(void *)pN) ;
+////				delete pN ;
+////				pN = hN ;
+////				printf("itsNDSet%d parent: %p\n",j,(void *)pN) ;
+////			}
+////			delete itsNDSet[j] ;
+////			itsNDSet[j] = 0 ;
+////		}
+////		
+////		itsVert = goal ;
+//  }
+  
   // Initialise non-dominated path set
   if (itsNDSet.empty()){
     itsSearch = new Search(itsGraph, start, goal) ;
@@ -498,6 +518,7 @@ XY RAGS::SearchGraph(Vertex * start, Vertex * goal, vector<double> &weights)
     
     for (ULONG i = 0; i < (ULONG)GSPaths.size(); i++)
       itsNDSet.push_back(GSPaths[i]->ReverseList(0)) ;
+		
     for (ULONG i = 0; i < (ULONG)itsNDSet.size(); i++)
       itsNDSet[i]->SetCTG(GSPaths[i]->GetMeanCost(),GSPaths[i]->GetVarCost()) ;
     SetInitialVert(itsNDSet[0]->GetVertex()) ;
@@ -540,22 +561,6 @@ XY RAGS::SearchGraph(Vertex * start, Vertex * goal, vector<double> &weights)
 		  	noNodes.push_back(newNodes[j]->GetParent()) ;
 	  nextVerts[i]->SetNodes(tmpNodes) ;
   }
-  
-//   Delete nodes that will not be considered along entire link list
-//  for (unsigned i = 0; i < noNodes.size(); i++){
-//  	Node * hN ;
-//  	Node * pN = noNodes[i]->GetParent() ;
-//  	while (pN){
-//  		hN = pN->GetParent() ;
-//			printf("noNodes ancestors: %p\n",(void *)hN) ;
-//  		delete pN ;
-//  		pN = hN ;
-//			printf("noNodes parents: %p\n",(void *)hN) ;
-//		}
-//		printf("noNodes%d: %p\n",i,(void *)noNodes[i]) ;
-//		delete noNodes[i] ;
-//		noNodes[i] = 0 ;
-//  }
 	
 	// Rank next vertices according to probability of improvement
 	sort(nextVerts.begin(),nextVerts.end(),IsABetterThanB) ;

@@ -319,6 +319,13 @@ class RAGS
     ~RAGS()
     {
     	for (unsigned i = 0; i < itsNDSet.size(); i++){
+    		Node * hN ;
+    		Node * pN = itsNDSet[i]->GetParent() ;
+    		while (pN){
+    			hN = pN->GetParent() ;
+    			delete pN ;
+    			pN = hN ;
+  			}
     		delete itsNDSet[i] ;
     		itsNDSet[i] = 0 ;
   		}
