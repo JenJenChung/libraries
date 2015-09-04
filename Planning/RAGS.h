@@ -66,13 +66,7 @@ class Edge
 	public:
 		Edge(Vertex * v1, Vertex * v2, double cost, double var):
 		  itsVertex1(v1), itsVertex2(v2), itsMeanCost(cost), itsVarCost(var), itsMeanSearch(cost), itsVarSearch(var) {}
-		~Edge()
-		{
-	    delete itsVertex1 ;
-	    itsVertex1 = 0 ;
-	    delete itsVertex2 ;
-	    itsVertex2 = 0 ;
-    }
+		~Edge(){}
 		
 		Vertex * GetVertex1() const {return itsVertex1 ;}
 		Vertex * GetVertex2() const {return itsVertex2 ;}
@@ -110,8 +104,16 @@ class Graph
     
 		~Graph()
 		{
+			for (unsigned i = 0; i < numVertices; i++){
+				delete itsVertices[i] ;
+				itsVertices[i] = 0 ;
+			}
 	    delete [] itsVertices ;
-	    itsVertices = 0;
+	    itsVertices = 0 ;
+	    for (unsigned i = 0; i < numEdges; i++){
+		  	delete itsEdges[i] ;
+		  	itsEdges[i] = 0 ;
+    	}
 	    delete [] itsEdges ;
 	    itsEdges = 0 ;
     }
@@ -318,6 +320,10 @@ class RAGS
     
     ~RAGS()
     {
+      delete itsGraph ;
+      itsGraph = 0 ;
+      delete itsSearch ;
+      itsSearch = 0 ;
     	for (unsigned i = 0; i < itsNDSet.size(); i++){
     		Node * hN ;
     		Node * pN = itsNDSet[i]->GetParent() ;
@@ -329,10 +335,6 @@ class RAGS
     		delete itsNDSet[i] ;
     		itsNDSet[i] = 0 ;
   		}
-      delete itsGraph ;
-      itsGraph = 0 ;
-      delete itsSearch ;
-      itsSearch = 0 ;
     }
     
     Graph * GetGraph() const {return itsGraph ;}

@@ -486,26 +486,6 @@ XY RAGS::SearchGraph(Vertex * start, Vertex * goal, vector<double> &weights)
 {
   AssignCurrentEdgeCosts(weights) ;
   
-//  if (!itsNDSet.empty()){
-//		// DEBUGGING: shows that itsNDSet still has access to all Node pointers along paths
-////		for (unsigned j = 0; j < itsNDSet.size(); j++){
-////			Node * hN ;
-////			Node * pN = itsNDSet[j]->GetParent() ;
-////			printf("itsNDSet%d parent: %p\n",j,(void *)pN) ;
-////			while (pN){
-////				hN = pN->GetParent() ;
-////				printf("itsNDSet%d grandparent: %p\n",j,(void *)pN) ;
-////				delete pN ;
-////				pN = hN ;
-////				printf("itsNDSet%d parent: %p\n",j,(void *)pN) ;
-////			}
-////			delete itsNDSet[j] ;
-////			itsNDSet[j] = 0 ;
-////		}
-////		
-////		itsVert = goal ;
-//  }
-  
   // Initialise non-dominated path set
   if (itsNDSet.empty()){
     itsSearch = new Search(itsGraph, start, goal) ;
