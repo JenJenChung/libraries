@@ -150,11 +150,9 @@ Node * Node::ReverseList(Node * itsChild)
   itsParentR->SetVarCost(GetVarCost()) ;
   itsParentR->SetParent(itsChild) ;
 
-  Node * itsReverse ;
-
   if (GetParent())
   {
-    itsReverse = GetParent()->ReverseList(itsParentR) ;
+    Node * itsReverse = GetParent()->ReverseList(itsParentR) ;
     return itsReverse ;
   }
   else
@@ -264,7 +262,6 @@ vector<Node *> Search::PathSearch(pathOut pType)
 	
 	    if (newNeighbour){
 		    // Create neighbour node
-		    // Memory leak here ************************************************************************
 		    Node * currentNeighbour = new Node(currentNode, neighbours[i]) ;
 		    UpdateNode(currentNeighbour) ;
 		    itsQueue->UpdateQueue(currentNeighbour) ;
@@ -517,6 +514,7 @@ XY RAGS::SearchGraph(Vertex * start, Vertex * goal, vector<double> &weights)
   vector<Node *> newNodes = itsNDSet ;
   itsVert->SetNodes(newNodes) ;
   vector<Node *> tmpNodes ;
+  vector<Node *> noNodes ; // keep track of unvisited nodes
   vector<Vertex *> nextVerts ;
   
   // Identify next vertices
@@ -538,30 +536,53 @@ XY RAGS::SearchGraph(Vertex * start, Vertex * goal, vector<double> &weights)
 	  for (unsigned j = 0; j < newNodes.size(); j++)
 		  if (nextVerts[i] == newNodes[j]->GetParent()->GetVertex())
 			  tmpNodes.push_back(newNodes[j]->GetParent()) ;
+		  else
+		  	noNodes.push_back(newNodes[j]->GetParent()) ;
 	  nextVerts[i]->SetNodes(tmpNodes) ;
   }
+  
+//   Delete nodes that will not be considered along entire link list
+//  for (unsigned i = 0; i < noNodes.size(); i++){
+//  	Node * hN ;
+//  	Node * pN = noNodes[i]->GetParent() ;
+//  	while (pN){
+//  		hN = pN->GetParent() ;
+//			printf("noNodes ancestors: %p\n",(void *)hN) ;
+//  		delete pN ;
+//  		pN = hN ;
+//			printf("noNodes parents: %p\n",(void *)hN) ;
+//		}
+//		printf("noNodes%d: %p\n",i,(void *)noNodes[i]) ;
+//		delete noNodes[i] ;
+//		noNodes[i] = 0 ;
+//  }
 	
 	// Rank next vertices according to probability of improvement
 	sort(nextVerts.begin(),nextVerts.end(),IsABetterThanB) ;
 	itsVert = nextVerts[0] ;
 	
-//  // Rank next vertices according to probability of improvement
-//  // don't need sort of only one option
-//	if (nextVerts.size() == 1)
-//		itsVert = nextVerts[0] ;
-//	else{
-//		double pImprove = 0.5 ;
-//		unsigned ii = 0 ;
-//		for (unsigned i = 1; i < nextVerts.size(); i++){
-//			double p = ComputeImprovementProbability(nextVerts[0],nextVerts[1]) ;
-//			if (pImprove < p) {
-//				pImprove = p ;
-//				ii = i ;
-//			}
-//		}
-//		itsVert = nextVerts[ii] ;
-//	}
+	// Delete nodes of vertices that will not be considered along entire link list
+	for (unsigned i = 1; i < nextVerts.size(); i++){
+		vector<Node *> nN = nextVerts[i]->GetNodes() ;
+		for (unsigned j = 0; j < nN.size(); j++){
+			Node * hN ;
+			Node * pN = nN[j]->GetParent() ;
+			while (pN){
+				hN = pN->GetParent() ;
+				delete pN ;
+				pN = hN ;
+			}
+			delete nN[j] ;
+			nN[j] = 0 ;
+		}
+  }
 	
+	// Delete old NDSet
+	for (unsigned i = 0; i < itsNDSet.size(); i++){
+		delete itsNDSet[i] ;
+		itsNDSet[i] = 0 ;
+	}
+	itsNDSet.clear() ;
 	itsNDSet = itsVert->GetNodes() ;
 	XY vertXY = XY(itsVert->GetX(),itsVert->GetY()) ;
 	return vertXY ;

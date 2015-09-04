@@ -318,6 +318,10 @@ class RAGS
     
     ~RAGS()
     {
+    	for (unsigned i = 0; i < itsNDSet.size(); i++){
+    		delete itsNDSet[i] ;
+    		itsNDSet[i] = 0 ;
+  		}
       delete itsGraph ;
       itsGraph = 0 ;
       delete itsSearch ;
