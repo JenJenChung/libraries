@@ -28,10 +28,10 @@ typedef Matrix<int,2> ID_grid;
 class UAV{
 	/*
 	This class is for moving UAVs in the airspace. They interact with the 
-	environment through planning. Planning is done through boost. 
+	environment through planning. Planning is done through RAGS. 
 	*/
 public:
-	enum UAVType{SLOW, FAST, NTYPES=5}; // original: const enum UAVType{SLOW, FAST, NTYPES=5};
+	enum UAVType{SLOW, FAST, NTYPES=2}; // original: const enum UAVType{SLOW, FAST, NTYPES=5};
 	//const enum UAVType{SLOW,NTYPES};
 
 	// JEN: each UAV to have its own RAGS object
@@ -87,6 +87,7 @@ public:
 class ATFMSectorDomain: public IDomainStateful
 {
 public:
+	enum TYPECap{TYPE0=2, TYPE1=5, TYPE2=3, TYPE3=1, TYPE4=4, TYPE5=10};
 	ATFMSectorDomain(bool deterministic=false);
 	~ATFMSectorDomain(void);
 

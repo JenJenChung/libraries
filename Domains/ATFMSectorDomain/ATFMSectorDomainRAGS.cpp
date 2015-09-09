@@ -149,7 +149,19 @@ ATFMSectorDomain::ATFMSectorDomain(bool deterministic):
 	}
 
 	n_agents = sectors->size(); // number of agents dictated by read in file
-	connection_capacity = matrix2d(n_agents,matrix1d(UAV::NTYPES,5.0)) ; // flat capacity across all types
+	matrix1d type_capacity ;
+	type_capacity.push_back(TYPE0) ;
+	if (UAV::NTYPES > 0)
+		type_capacity.push_back(TYPE1) ;
+	if (UAV::NTYPES > 1)
+		type_capacity.push_back(TYPE2) ;
+	if (UAV::NTYPES > 2)
+		type_capacity.push_back(TYPE3) ;
+	if (UAV::NTYPES > 3)
+		type_capacity.push_back(TYPE4) ;
+	if (UAV::NTYPES > 4)
+		type_capacity.push_back(TYPE5) ;
+	connection_capacity = matrix2d(n_agents,type_capacity) ; // flat capacity across all types
 
 	// Adjust the connection map to be the edges
 	// preprocess boolean connection map
@@ -191,7 +203,7 @@ ATFMSectorDomain::ATFMSectorDomain(bool deterministic):
 //		w_var[i] = matrix1d(connection_time.size(),0.1) ;//*******************************************
 		w_mean[i] = DotMultiply(connection_time,2.0);//*************************************************
 		w_var[i] = DotMultiply(connection_time,0.3);//**************************************************
-}
+	}
 	weights[0] = w_mean ;
 	weights[1] = w_var ;
 	weights_history.push_back(weights[0]) ;
