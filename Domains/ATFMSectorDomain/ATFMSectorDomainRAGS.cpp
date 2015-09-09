@@ -324,7 +324,7 @@ void ATFMSectorDomain::setCostMaps(vector<vector<double> > agent_actions){
 	for (unsigned i=0; i<w_val[0].size(); i++){
 		for (unsigned j=0; j<UAV::NTYPES; j++){
 			unsigned s = sector_dir_map[i].first;
-			unsigned d = j*(UAV::NTYPES-1) + sector_dir_map[i].second;
+			unsigned d = j + sector_dir_map[i].second*(UAV::NTYPES);
 			
 			if (s < 0 || s >= agent_actions.size())
 				printf("s: %i", s) ;
