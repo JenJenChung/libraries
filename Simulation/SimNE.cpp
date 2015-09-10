@@ -58,7 +58,7 @@ void SimNE::epoch(int ep){
 			// note: things here get specific to the utm domain
 			if (avg_G>best_run) {
 				best_run = avg_G;
-				best_run_performance = avg_perf; // average of the performance metrics
+//				best_run_performance = avg_perf; // average of the performance metrics
 // SUPPRESSING FOR DEBUGGING************************************************************************
 //				if (ep==0){
 //					domain->exportLog("stat_results/conflict_map-0-", ep); // blatant abuse of exportlog
@@ -67,8 +67,11 @@ void SimNE::epoch(int ep){
 //					domain->exportLog("stat_results/conflict_map-99-",ep);
 //				}
 			}
+			if (avg_perf>best_run_performance){
+				best_run_performance = avg_perf; // average of the performance metrics
+			}
 			
-			printf("NN#%i, %f\n",n, best_run);
+			printf("NN#%i, %f, %f\n",n, best_run_performance, best_run);
 			//printf(".");
 			ostringstream epi,ni,ti;
 			epi << ep;

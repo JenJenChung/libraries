@@ -87,7 +87,7 @@ public:
 class ATFMSectorDomain: public IDomainStateful
 {
 public:
-	enum TYPECap{TYPE0=2, TYPE1=5, TYPE2=3, TYPE3=1, TYPE4=4, TYPE5=10};
+	enum TYPECap{TYPE1=2, TYPE2=5, TYPE3=3, TYPE4=1, TYPE5=4, TYPE6=10};
 	ATFMSectorDomain(bool deterministic=false);
 	~ATFMSectorDomain(void);
 
@@ -177,7 +177,7 @@ public:
 	vector<XY> agent_locs;
 	vector<RAGS::edge> edges ; // list of edges
 	matrix1d connection_time ; // list of connection times for each edge
-	matrix2d connection_capacity ; // capacity of each agent for each type of UAV
+	matrix2d agent_capacity ; // capacity of each agent for each type of UAV
 	matrix3d weights ; // [mean/var][type][edge]
 	list< vector< vector<double> > > weights_history ; // [timestep][type][edge] list first dimension for sliding window use
 
@@ -185,21 +185,48 @@ public:
 	map<int,pair<int,int> > sector_dir_map; // maps index of edge to (sector next, direction of travel)
 
 	matrix2d overcap;
+	matrix3d counterOvercap;
+	matrix1d globalPerformance ;
 
 	void count_overcap(){
 		if(!overcap.size()){
 			overcap = matrix2d(n_agents);
 
 			for (int i=0; i<overcap.size(); i++){
-				overcap[i] = matrix1d(UAV::NTYPES,0.0); // starts at 'capacity'
+				overcap[i] = matrix1d(UAV::NTYPES,0.0) ;
 			}
 		}
 		// Count total UAVs on each connection
-		matrix2d current_cap = connection_capacity ;
+		matrix2d current_cap = agent_capacity ;
 		for (list<UAV*>::iterator u=UAVs->begin(); u!=UAVs->end(); u++){
 			current_cap[getSector((*u)->loc)][(*u)->type_ID]-=1.0;
 			if (current_cap[getSector((*u)->loc)][(*u)->type_ID] < 0.0)
 				overcap[getSector((*u)->loc)][(*u)->type_ID]-=1.0 ;
+		}
+	}
+	
+	void CounterFactual(){
+		if(!counterOvercap.size())
+			counterOvercap = matrix3d(n_agents,matrix2d(n_agents,matrix1d(UAV::NTYPES,0.0)));
+		
+		// loop through all UAVs, any UAVs at agent_loc are reassigned to their next_loc
+		int i = 0 ;
+		for(Fix f: *fixes){
+			// Count total UAVs on each connection
+			matrix2d current_cap = agent_capacity ;
+			for (list<UAV*>::iterator u=UAVs->begin(); u!=UAVs->end(); u++){
+				if ((*u)->loc == f.loc){
+					current_cap[getSector((*u)->next_loc)][(*u)->type_ID]-=1.0;
+					if (current_cap[getSector((*u)->next_loc)][(*u)->type_ID] < 0.0)
+						counterOvercap[i][getSector((*u)->next_loc)][(*u)->type_ID]-=1.0 ;
+				}
+				else{
+					current_cap[getSector((*u)->loc)][(*u)->type_ID]-=1.0;
+					if (current_cap[getSector((*u)->loc)][(*u)->type_ID] < 0.0)
+						counterOvercap[i][getSector((*u)->loc)][(*u)->type_ID]-=1.0 ;
+				}
+			}
+			i++ ;
 		}
 	}
 };

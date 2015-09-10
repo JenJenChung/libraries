@@ -69,7 +69,6 @@ bool Fix::atDestinationFix(const UAV &u){
 }
 
 list<UAV*> Fix::generateTraffic(vector<Fix>* allFixes, barrier_grid* obstacle_map, vector<XY> &locations, vector<RAGS::edge> &edge_array, matrix3d &weights){
-//list<UAV> Fix::generateTraffic(vector<Fix>* allFixes, barrier_grid* obstacle_map, vector<XY> &locations, vector<RAGS::edge> &edge_array, matrix3d &weights){
 	static int calls = 0;
 	// Creates a new UAV in the world
 	std::list<UAV*> newTraffic;
@@ -86,7 +85,6 @@ list<UAV*> Fix::generateTraffic(vector<Fix>* allFixes, barrier_grid* obstacle_ma
 		UAV::UAVType type_id_set = UAV::UAVType(calls%int(UAV::UAVType::NTYPES)); // EVEN TYPE NUMBER
 		UAV * newUAV = new UAV(loc,end_loc,type_id_set,locations,edge_array,weights[type_id_set]) ;
 		newTraffic.push_back(newUAV);
-//		newTraffic.push_back(*newUAV);
 	}
 	
 	/* VARIABLE TRAFFIC METHOD
@@ -112,8 +110,7 @@ ATFMSectorDomain::ATFMSectorDomain(bool deterministic):
 	fixes = new vector<Fix>();
 	UAVs = new list<UAV*>();
 
-	// inherritance elements: constant
-	//n_control_elements=4; // 4 outputs for sectors (cost in cardinal directions) (no types)
+	// Inheritance elements: constant
 	n_control_elements=4*UAV::NTYPES;
 	n_state_elements=4; // 4 state elements for sectors ( number of planes traveling in cardinal directions)
 	n_steps=100; // steps of simulation time
@@ -143,16 +140,15 @@ ATFMSectorDomain::ATFMSectorDomain(bool deterministic):
 		agent_locs[i] = sectors->back().xy;
 	}
 	
-	// initialize fixes
+	// Initialize fixes
 	for (unsigned i=0; i<fix_locs.size(); i++){
 		fixes->push_back(Fix(XY(fix_locs[i][0],fix_locs[i][1]),i,is_deterministic));
 	}
-
+	
+	// Heterogeneous capacity across all types, currently can handle up to 5 types
 	n_agents = sectors->size(); // number of agents dictated by read in file
 	matrix1d type_capacity ;
-	type_capacity.push_back(TYPE0) ;
-	if (UAV::NTYPES > 0)
-		type_capacity.push_back(TYPE1) ;
+	type_capacity.push_back(TYPE1) ;
 	if (UAV::NTYPES > 1)
 		type_capacity.push_back(TYPE2) ;
 	if (UAV::NTYPES > 2)
@@ -161,7 +157,9 @@ ATFMSectorDomain::ATFMSectorDomain(bool deterministic):
 		type_capacity.push_back(TYPE4) ;
 	if (UAV::NTYPES > 4)
 		type_capacity.push_back(TYPE5) ;
-	connection_capacity = matrix2d(n_agents,type_capacity) ; // flat capacity across all types
+	if (UAV::NTYPES > 5)
+		type_capacity.push_back(TYPE6) ;
+	agent_capacity = matrix2d(n_agents,type_capacity) ;
 
 	// Adjust the connection map to be the edges
 	// preprocess boolean connection map
@@ -171,7 +169,7 @@ ATFMSectorDomain::ATFMSectorDomain(bool deterministic):
 			if (connection_map[i][j] && i!=j){
 				XY xyi = agent_locs[i];
 				XY xyj = agent_locs[j];
-				XY dx_dy = xyi-xyj;
+				XY dx_dy = xyj-xyi;
 				int xydir = cardinalDirection(dx_dy);
 				int memj = membership_map->at(xyi); // costs applied to outgoing edges
 				sector_dir_map[edges.size()] = make_pair(memj,xydir); // add at new index
@@ -192,23 +190,20 @@ ATFMSectorDomain::ATFMSectorDomain(bool deterministic):
 	}
 
 	// JEN: Initialise weights with variance, log to weights history
-	// Set base edge costs as Euclidean distance + Euclidean distance * agent_action
-	// initialise agent actions to 1.0 to give initial estimate of cost as 2*Euclidean distance
-	// initialise variance to 0.1
+	// Set base edge costs as connection_time + connection_time * agent_action
+	// initialise agent actions to 1.0 to give initial estimate of cost as 2*connection_time
+	// initialise variance to 0.3
 	weights = matrix3d(2) ;
 	matrix2d w_mean(UAV::NTYPES) ;
 	matrix2d w_var(UAV::NTYPES) ;
 	for (unsigned i=0; i<w_mean.size(); i++){
-//		w_mean[i] = matrix1d(connection_time.size(),1.0) ;//******************************************
-//		w_var[i] = matrix1d(connection_time.size(),0.1) ;//*******************************************
 		w_mean[i] = DotMultiply(connection_time,2.0);//*************************************************
 		w_var[i] = DotMultiply(connection_time,0.3);//**************************************************
 	}
 	weights[0] = w_mean ;
 	weights[1] = w_var ;
 	weights_history.push_back(weights[0]) ;
-	// END
-
+	
 	conflict_count = 0; // initialize with no conflicts
 	
 	conflict_count_map = new ID_grid(obstacle_map->dim1(), obstacle_map->dim2());
@@ -230,7 +225,7 @@ ATFMSectorDomain::~ATFMSectorDomain(void)
 
 vector<double> ATFMSectorDomain::getPerformance(){
 	if (abstraction_mode){
-		return getRewards();
+		return globalPerformance ;
 	} else {
 		return matrix1d(sectors->size(),-conflict_count);
 	}
@@ -254,18 +249,28 @@ vector<double> ATFMSectorDomain::getRewards(){
 	} else {
 		//int overcap[n_agents][UAV::NTYPES];
 
-		double G=0;
-		for (unsigned i=0; i<overcap.size(); i++){
-			for (unsigned j=0; j<overcap[i].size(); j++){
-				if (overcap[i][j] < 0.0){
-					G -= abs(overcap[i][j]) ;	// use linear cost
-//					G -= overcap[i][j]*overcap[i][j]; // worse with higher concentration of planes!*********
+		matrix1d D ;
+		globalPerformance.clear() ;
+		for (int k = 0; k < n_agents; k++){
+			double G_c = 0.0 ;
+			double G_reg = 0.0 ;
+			for (unsigned i=0; i<overcap.size(); i++){
+				for (unsigned j=0; j<overcap[i].size(); j++){
+					if (overcap[i][j] < 0.0)
+						G_reg -= abs(overcap[i][j]) ;	// use linear cost
+	//					G -= overcap[i][j]*overcap[i][j]; // worse with higher concentration of planes!*********
+					if (counterOvercap[k][i][j] < 0.0)
+						G_c -= abs(counterOvercap[k][i][j]) ;
 				}
-				// clear overcap once used!
-				overcap[i][j] = 0.0 ;
 			}
+//		return matrix1d(n_agents, G); // global reward
+			globalPerformance.push_back(G_reg) ;
+			D.push_back(G_reg - G_c) ;
 		}
-		return matrix1d(n_agents, G); // global reward
+		// clear overcap once used!
+		overcap = matrix2d(n_agents,matrix1d(UAV::NTYPES,0.0)) ;
+		counterOvercap = matrix3d(n_agents,overcap) ;
+		return D ;
 	}
 }
 
@@ -343,9 +348,8 @@ void ATFMSectorDomain::setCostMaps(vector<vector<double> > agent_actions){
 			if (d < 0 || d >= agent_actions[s].size())
 				printf("d: %i", d) ;
 			
-			// Scale agent actions against connection time
-			w_val[j][i] = (1.0+agent_actions[s][d]) * connection_time[i] ;//****************************
-//			w_val[j][i] = agent_actions[s][d] ;//*******************************************************
+			// Scale agent actions against connection time to compute edge weight
+			w_val[j][i] = (1.0+agent_actions[s][d]) * connection_time[i] ;
 			
 			if (w_val[j][i] < 0.0){
 				printf("Negative weight at (j,i): (%i,%i), (s,d): (%i,%i)", j, i, s, d) ;
@@ -390,7 +394,6 @@ void ATFMSectorDomain::getNewUAVTraffic(){
 	// Create RAGS object with current weights history
 	
 	// Generates (with some probability) plane traffic for each sector
-//	list<UAV> all_new_UAVs;
 	list<UAV*> all_new_UAVs;
 	
 	// Collate weights for each type of UAV
@@ -466,6 +469,7 @@ void ATFMSectorDomain::detectConflicts(){
 
 	if (abstraction_mode){
 		count_overcap();
+		CounterFactual() ;
 	} else {
 		double conflict_thresh = 1.0;
 		for (list<UAV*>::iterator u1=UAVs->begin(); u1!=UAVs->end(); u1++){

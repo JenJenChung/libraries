@@ -8,8 +8,7 @@
     Use as you like as long as you acknowledge the source.
 */
 
-#ifndef MATRIX_LIB
-#define MATRIX_LIB
+#pragma once
 
 #include "easymath.h"
 #include<string>
@@ -808,4 +807,3 @@ template<class T, int D> Matrix<T,D> operator^(const Matrix<T,D>& m, const T& c)
 //-----------------------------------------------------------------------------
 
 }
-#endif

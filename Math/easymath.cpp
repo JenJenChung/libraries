@@ -23,13 +23,28 @@ matrix3d zeros(int dim1, int dim2, int dim3){
 
 
 namespace easymath{
+	// original: quadrants
+//	int cardinalDirection(XY dx_dy){
+//		if (dx_dy.y>=0){ // Going up
+//			if (dx_dy.x>=0) return 0; // up-right
+//			else return 1; // up-left
+//		} else {
+//			if (dx_dy.x>=0) return 2; // down-right
+//			else return 3; // down-left
+//		}
+//	}
+	
 	int cardinalDirection(XY dx_dy){
-		if (dx_dy.y>=0){ // Going up
-			if (dx_dy.x>=0) return 0; // up-right
-			else return 1; // up-left
-		} else {
-			if (dx_dy.x>=0) return 2; // down-right
-			else return 3; // down-left
+		if (abs(dx_dy.y) >= abs(dx_dy.x)){ // going north or south
+			if (dx_dy.y >= 0)
+				return 0 ; // north
+			else
+				return 2; // south
+		} else { // going east or west
+			if (dx_dy.x >= 0)
+				return 1 ; // east
+			else
+				return 3 ; // west
 		}
 	}
 
