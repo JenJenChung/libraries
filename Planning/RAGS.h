@@ -315,7 +315,7 @@ class RAGS
     RAGS(vector<XY> &locations, vector<edge> &edge_array, vector< vector<double> > &weights): 
     itsLocations(locations), itsEdgeArray(edge_array){
     	itsGraph = new Graph(locations, edge_array, weights) ;
-    	PSET = ALL ;
+    	PSET = BEST ; // BEST = ASTAR; ALL = RAGS
     }
     
     ~RAGS()
